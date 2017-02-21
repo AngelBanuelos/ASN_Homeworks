@@ -8,71 +8,75 @@ import java.util.Map;
 import java.util.Set;
 
 public class MemStorage extends BasicKeyValueStore {
-	Map<String,List<String>> storage = new HashMap<>();
 
-	@Override
-	public Set<String> get(String search) {
-		Set<String> theSet = new HashSet<String>();
-		if (storage.containsKey(search))
-			theSet.addAll(storage.get(search));
-		
-		return theSet;
-	}
+    Map<String, List<String>> storage = new HashMap<>();
 
-	@Override
-	public boolean exists(String search) {
-		return storage.containsKey(search);
-	}
+    @Override
+    public Set<String> get(String search) {
+        Set<String> theSet = new HashSet<String>();
+        if (storage.containsKey(search)) {
+            theSet.addAll(storage.get(search));
+        }
 
-	@Override
-	public Set<String> getPrefix(String search) {
-		Set<String> results = new HashSet<String>();
-		
-		for (String k: storage.keySet()) {
-			if (k.startsWith(search))
-				results.addAll(storage.get(k));
-		}
-		return results;
-	}
+        return theSet;
+    }
 
-	@Override
-	public void addToSet(String keyword, String value) {
-		if (!storage.containsKey(keyword))
-			storage.put(keyword, new ArrayList<String>());
-		
-		storage.get(keyword).add(value);
-	}
+    @Override
+    public boolean exists(String search) {
+        return storage.containsKey(search);
+    }
 
-	@Override
-	public void put(String keyword, String value) {
-		addToSet(keyword, value);
-	}
+    @Override
+    public Set<String> getPrefix(String search) {
+        Set<String> results = new HashSet<String>();
 
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
+        for (String k : storage.keySet()) {
+            if (k.startsWith(search)) {
+                results.addAll(storage.get(k));
+            }
+        }
+        return results;
+    }
 
-	@Override
-	public void sync() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void addToSet(String keyword, String value) {
+        if (!storage.containsKey(keyword)) {
+            storage.put(keyword, new ArrayList<String>());
+        }
 
-	@Override
-	public boolean isCompressible() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+        storage.get(keyword).add(value);
+    }
 
-	@Override
-	public boolean supportsMoreThan256Attributes() {
-		return true;
-	}
+    @Override
+    public void put(String keyword, String value) {
+        addToSet(keyword, value);
+    }
 
-	public boolean supportsPrefixes() {
-		return true;
-	}
+    @Override
+    public void close() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void sync() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public boolean isCompressible() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public boolean supportsMoreThan256Attributes() {
+        return true;
+    }
+
+    public boolean supportsPrefixes() {
+        return true;
+    }
 
 }

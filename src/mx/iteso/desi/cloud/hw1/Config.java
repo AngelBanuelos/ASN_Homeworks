@@ -17,7 +17,7 @@ public class Config {
   // The type of key/value store you are using. Initially set to BERKELEY;
   // will be changed to DynamoDB in some phases.
   public static final KeyValueStoreFactory.STORETYPE storeType = KeyValueStoreFactory.STORETYPE.BERKELEY;
-  public static final String pathToDatabase = "c:/dbd";
+  public static final String pathToDatabase = "/Users/angel_banuelos/Downloads/";
     
   // Set to your Amazon Access Key ID
   // NEVER SHARE THIS INFORMATION. SO PLEASE SET IT TO "" WHEN YOU UPLOAD YOUR HOMEWORK 
