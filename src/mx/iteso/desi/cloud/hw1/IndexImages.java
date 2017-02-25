@@ -32,7 +32,7 @@ public class IndexImages {
 
     public void run(String imageFileName, String titleFileName) throws FileNotFoundException, IOException {
 
-        String path = Config.pathToDatabase + imageFileName;//titleFileName;//
+        String path = Config.pathToDatabase + titleFileName;//imageFileName;//
 
         FileInputStream inputStream = null;
         Scanner sc = null;
@@ -42,35 +42,35 @@ public class IndexImages {
             sc = new Scanner(inputStream, "UTF-8");
             int stop = 10000;
             long count = 0;
-            List<String> lines = new ArrayList<>();
             List<Triple> tipleList = new LinkedList<Triple>();
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
-                stop--;
                 line = line.replace('<', ' ').trim();
-//                lines.add(line);
+                if(!Config.filter.isEmpty() && !line.contains(Config.filter)){
+                    continue;
+                }
+                stop--;
                 String[] helper = line.split(">");
-                if (helper != null && helper.length > 3) {
+                System.out.println("" + Arrays.toString(helper));
+                if (helper != null && helper.length >= 3) {
                     Triple t = new Triple(helper[0], helper[1], helper[2]);
                     tipleList.add(t);
+                    String helper1 = t.get(2).replace("\"", "").substring(0, t.get(2).lastIndexOf("@") -2);
+                    String[] helper2 = helper1.substring(helper1.lastIndexOf("/") + 1).split(" ");
+                    for (String key : helper2) {
+                        System.out.println("key: " + PorterStemmer.stem(key) + " Value: " + helper1);
+                        
+                        titleStore.put(PorterStemmer.stem(key), helper1);
+                    }
                 } else{
                     System.out.println("" + Arrays.toString(helper));
                 }
-                System.out.println("" + Arrays.toString(helper));
-//                if (line.contains("PaulBasa")) {
-//                    System.out.println(line);
-//                    lines.add(line);
-//                }
                 if (stop == 0) {
 //                    Path file = Paths.get(Config.pathToDatabase +  "file" + count + ".txt");
 //                    Files.write(file, lines, Charset.forName("UTF-8"));
                     System.out.println("File Created" + ++count);
                     stop = 10000;
-//                    lines = new ArrayList<>();
                 }
-            }
-            for (String line : lines) {
-                System.out.println(line);
             }
             // note that Scanner suppresses exceptions
             if (sc.ioException() != null) {
@@ -88,6 +88,7 @@ public class IndexImages {
 
     public void close() {
         //TODO: close the databases;
+        
     }
 
     public static void main(String args[]) {

@@ -17,7 +17,7 @@ public class Config {
   // The type of key/value store you are using. Initially set to BERKELEY;
   // will be changed to DynamoDB in some phases.
   public static final KeyValueStoreFactory.STORETYPE storeType = KeyValueStoreFactory.STORETYPE.BERKELEY;
-  public static final String pathToDatabase = "/Users/angel_banuelos/Downloads/";
+  public static final String pathToDatabase = "C:\\Users\\angeldeb\\Downloads\\ASN\\";
     
   // Set to your Amazon Access Key ID
   // NEVER SHARE THIS INFORMATION. SO PLEASE SET IT TO "" WHEN YOU UPLOAD YOUR HOMEWORK 
@@ -34,9 +34,17 @@ public class Config {
   // Restrict the topics that should be indexed. For example, when this is
   // set to 'X', you should only index topics that start with an X.
   // Set this to "A" for local work, and to "Ar" for cloud tests..
-  public static final String filter = "";
+  public static final String filter = "A";
+  public static FilterProperties filterCriteria = FilterProperties.URL_STARTS;
   
+  public enum FilterProperties {
+      URL_STARTS,
+      URL_CONTAINS,
+      URL_ENDS
+  }
   public static final String titleFileName = "labels_en.ttl";
   public static final String imageFileName = "images_en.ttl";
+  
+  
     
 }
