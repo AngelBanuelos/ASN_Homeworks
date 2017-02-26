@@ -5,8 +5,8 @@ var router = express.Router();
 
 router.get('/', function(req, res) {
   console.log("Argumento: "+req.params.word);
-  var stemmedword = stemmer(req.params.word).toLowerCase(); //stem the word
-  console.log("Stemmed word: "+stemmedword);
+  var stemmedword = stemmer(req.params.word); //stem the word
+  console.log("@Search Stemmed word: "+stemmedword);
   
   // define an array to store the final set of results returned from DynamoDB
   var imageurls = new Array(); 

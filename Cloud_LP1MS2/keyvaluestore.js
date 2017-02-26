@@ -1,148 +1,176 @@
-  var AWS = require('aws-sdk');
-  AWS.config.loadFromPath('./config.json');
+var AWS = require('aws-sdk');
+AWS.config.loadFromPath('./config.json');
 
-  if (!AWS.config.credentials || !AWS.config.credentials.accessKeyId)
+if (!AWS.config.credentials || !AWS.config.credentials.accessKeyId)
     throw 'Need to update config.json to specify your access key!';
 
-  var db = new AWS.DynamoDB();
+var db = new AWS.DynamoDB();
 
-  function keyvaluestore(table) {
+function keyvaluestore(table) {
     this.inx = -1;
     this.LRU = require("lru-cache");
-    this.cache = this.LRU({ max: 500 });
+    this.cache = this.LRU({max: 500});
     this.tableName = table;
-  };
+}
+;
 
-  /**
-   * Initialize the tables
-   * 
-   */
-  keyvaluestore.prototype.init = function(callback) {
+/**
+ * Initialize the tables
+ * 
+ */
+keyvaluestore.prototype.init = function (callback) {
     var tableName = this.tableName;
     var initCount = this.initCount;
     var self = this;
-    
-    db.listTables(function(err, data) {
-      if (err) 
-        console.log(err, err.stack);
-      else {
-        console.log("Connected to AWS DynamoDB");
-        var tables = data.TableNames.toString().split(",");
-        console.log("Tables in DynamoDB: " + tables);
-        if (tables.indexOf(tableName) == -1) {
-          console.log("Need to create table " + tableName);
 
-          var params = {
-              AttributeDefinitions: 
-                [ /* required */
-                  {
-                    AttributeName: 'keyword', /* required */
-                    AttributeType: 'S' /* required */
-                  },
-                  {
-                    AttributeName: 'inx', /* required */
-                    AttributeType: 'N' /* required */
-                  }
-                ],
-              KeySchema: 
-                [ /* required */
-                  {
-                    AttributeName: 'keyword', /* required */
-                    KeyType: 'HASH' /* required */
-                  },
-                  {
-                    AttributeName: 'inx', /* required */
-                    KeyType: 'RANGE' /* required */
-                  }
-                ],
-              ProvisionedThroughput: { /* required */
-                ReadCapacityUnits: 1, /* required */
-                WriteCapacityUnits: 1 /* required */
-              },
-              TableName: tableName /* required */
-          };
-
-          db.createTable(params, function(err, data) {
-            if (err) {
-              console.log(err)
-            }
-            else {
-              console.log("Waiting 10s for consistent state...")
-              setTimeout(function(){
-                self.initCount(callback)
-              }, 10000)
-            }
-          });
-        } 
-        
+    db.listTables(function (err, data) {
+        if (err)
+            console.log(err, err.stack);
         else {
-          self.initCount(callback);
+            console.log("Connected to AWS DynamoDB");
+            var tables = data.TableNames.toString().split(",");
+            console.log("Tables in DynamoDB: " + tables);
+            if (tables.indexOf(tableName) == -1) {
+                console.log("Need to create table " + tableName);
+
+                var params = {
+                    AttributeDefinitions:
+                            [/* required */
+                                {
+                                    AttributeName: 'keyword', /* required */
+                                    AttributeType: 'S' /* required */
+                                },
+                                {
+                                    AttributeName: 'inx', /* required */
+                                    AttributeType: 'N' /* required */
+                                }
+                            ],
+                    KeySchema:
+                            [/* required */
+                                {
+                                    AttributeName: 'keyword', /* required */
+                                    KeyType: 'HASH' /* required */
+                                },
+                                {
+                                    AttributeName: 'inx', /* required */
+                                    KeyType: 'RANGE' /* required */
+                                }
+                            ],
+                    ProvisionedThroughput: {/* required */
+                        ReadCapacityUnits: 1, /* required */
+                        WriteCapacityUnits: 1 /* required */
+                    },
+                    TableName: tableName /* required */
+                };
+
+                db.createTable(params, function (err, data) {
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        console.log("Waiting 10s for consistent state...")
+                        setTimeout(function () {
+                            self.initCount(callback)
+                        }, 10000)
+                    }
+                });
+            } else {
+                self.initCount(callback);
+            }
         }
-      }
     }
     );
-  }
+}
 
-  /**
-   * Gets the count of how many rows are in the table
-   * 
-   */
-  keyvaluestore.prototype.initCount = function(whendone) {
+/**
+ * Gets the count of how many rows are in the table
+ * 
+ */
+keyvaluestore.prototype.initCount = function (whendone) {
     var self = this;
     var params = {
         TableName: self.tableName,
         Select: 'COUNT'
     };
-    
-    db.scan(params, function(err, data) {
-      if (err){
-        console.log(err, err.stack);
-      }
-      else {
-        self.inx = data.ScannedCount;
 
-        console.log("Found " + self.inx + " indexed entries in " + self.tableName);
-        whendone();
-      }
+    db.scan(params, function (err, data) {
+        if (err) {
+            console.log(err, err.stack);
+        } else {
+            self.inx = data.ScannedCount;
+
+            console.log("Found " + self.inx + " indexed entries in " + self.tableName);
+            whendone();
+        }
     });
 
-  }
+}
 
-  /**
-   * Get result(s) by key
-   * 
-   * @param search
-   * 
-   * Callback returns a list of objects with keys "inx" and "value"
-   */
-  keyvaluestore.prototype.get = function(search, callback) {
-      //TODO Code the GET FUNCTION from DynamoDB
-  };
+/**
+ * Get result(s) by key
+ * 
+ * @param search
+ * 
+ * Callback returns a list of objects with keys "inx" and "value"
+ */
+keyvaluestore.prototype.get = function (search, callback) {
+    //TODO Code the GET FUNCTION from DynamoDB
+    var params = {
+        TableName: this.tableName,
+        KeyConditionExpression: "#key = :keyword",
+        ExpressionAttributeNames: {
+            "#key": "keyword"
+        },
+        ExpressionAttributeValues: {
+            ":keyword": search
+        }
+    };
+    var table = new AWS.DynamoDB.DocumentClient();
+    var list = new Array();
+    table.query(params, function (err, data) {
+        if (err) {
+            console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+            callback(err, null);
+        } else {
+            console.log("Query succeeded.");
+            data.Items.forEach(function (item) {
+                console.log(" -", item.keyword + ": " + item.value + " inx:" + item.inx);
+                var myItemObject = {
+                    inx: item.inx,
+                    value: item.value
+                };
+                list.push(myItemObject);
+            });
+            callback(undefined, list);
+        }
+    });
 
-  /**
-   * Test if search key has a match
-   * 
-   * @param search
-   * @return
-   */
-  keyvaluestore.prototype.exists = function(search, callback) {
+
+};
+
+/**
+ * Test if search key has a match
+ * 
+ * @param search
+ * @return
+ */
+keyvaluestore.prototype.exists = function (search, callback) {
     var self = this;
-    
-    if (self.cache.get(search))
-      callback(null, self.cache.get(search));
-    else
-      module.exports.get(search, function(err, data) {
-        if (err)
-          callback(err, null);
-        else
-          callback(err, (data == null) ? false : true);
-      });
-  };
 
-  /**
-   * Get result set by key prefix
-   * @param search
-   *
-   * Callback returns a list of objects with keys "inx" and "value"
-   */
-  module.exports = keyvaluestore;
+    if (self.cache.get(search))
+        callback(null, self.cache.get(search));
+    else
+        module.exports.get(search, function (err, data) {
+            if (err)
+                callback(err, null);
+            else
+                callback(err, (data == null) ? false : true);
+        });
+};
+
+/**
+ * Get result set by key prefix
+ * @param search
+ *
+ * Callback returns a list of objects with keys "inx" and "value"
+ */
+module.exports = keyvaluestore;

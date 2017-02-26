@@ -22,7 +22,7 @@ app.set('view engine', 'jade');
 
 app.use(logger('dev'));
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.setHeader("Cache-Control", "no-cache must-revalidate");
     next();
 });
@@ -30,64 +30,64 @@ app.use(function(req, res, next) {
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Routes
-app.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+app.get('/', function (req, res, next) {
+    res.render('index', {title: 'Express'});
 });
 
-app.get('/search/:word', function(req, res) {
-  var stemmedword = stemmer(req.params.word).toLowerCase(); //stem the word
-  console.log("Stemmed word: "+stemmedword);
-  
-  var imageurls = new Array(); 
-  
-  var processData = function(callback) {
-      terms.get(stemmedword, function(err, data) {
-      if (err) {
-        console.log("getAttributes() failed: "+err);
-        callback(err.toString(), imageurls);
-      } else if (data == null) {
-        console.log("getAttributes() returned no results");
-        callback(undefined, imageurls);
-      } else {
-        console.log("getAttributes() returned");
-  	    async.forEach(data, function(attribute, callback) { 
-            console.log(attribute);
-            images.get(attribute.value, function(err, data){
-              if (err) {
-                console.log(err);
-              }
-              imageurls.push(data[0].value);
-              callback();
-            });
-          }, function(){
-            callback(undefined, imageurls);
-        });
-     }
-    });
-  };
+app.get('/search/:word', function (req, res) {
+    var stemmedword = stemmer(req.params.word); //stem the word
+    console.log("@APP Stemmed word: " + stemmedword);
 
-  processData(function(err, queryresults) {
-    if (err) {
-      res.send(JSON.stringify({results: undefined, num_results: 0, error: err}));
-    } else {
-      res.send(JSON.stringify({results: queryresults, num_results: queryresults.length, error: undefined}));
-    }
-  });
+    var imageurls = new Array();
+
+    var processData = function (callback) {
+        terms.get(stemmedword, function (err, data) {
+            if (err) {
+                console.log("getAttributes() failed: " + err);
+                callback(err.toString(), imageurls);
+            } else if (data == null) {
+                console.log("getAttributes() returned no results");
+                callback(undefined, imageurls);
+            } else {
+                console.log("getAttributes() returned");
+                async.forEach(data, function (attribute, callback) {
+                    console.log(attribute);
+                    images.get(attribute.value, function (err, data) {
+                        if (err) {
+                            console.log(err);
+                        }
+                        imageurls.push(data[0].value);
+                        callback();
+                    });
+                }, function () {
+                    callback(undefined, imageurls);
+                });
+            }
+        });
+    };
+
+    processData(function (err, queryresults) {
+        if (err) {
+            res.send(JSON.stringify({results: undefined, num_results: 0, error: err}));
+        } else {
+            res.send(JSON.stringify({results: queryresults, num_results: queryresults.length, error: undefined}));
+        }
+    });
 });
 
 //INIT Logic
-var images = new aws('images');
-var terms = new aws('terms');
+var images = new aws('imagesTrue');
+var terms = new aws('termsTrue');
 
 images.init(
-    function(){
-        terms.init(
-            function(){
-                console.log("Images Storage Starter");
-            }
-        )
-        console.log("Terms Storage Starter");
-    }    
+        function () {
+            terms.init(
+                    function () {
+                        console.log("Images Storage Starter");
+                    }
+            )
+            console.log("Terms Storage Starter");
+        }
 );
 
 
