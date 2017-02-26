@@ -25,7 +25,7 @@ public class IndexImages {
         ParseTriples parseImages = new ParseTriples(absoluteImagePath);
         ParseTriples parseTitle = new ParseTriples(absolutetitlePath);
         try {
-            int limit = 1_000_000;
+            int limit = 10_000;
             int counter = 0;
             Triple t = null;
             while (counter != limit && (t = parseImages.getNextTriple()) != null) {
@@ -33,11 +33,13 @@ public class IndexImages {
                 if (filter(subject) && !imageStore.exists(subject)) {
                     imageStore.put(subject, t.getObject());
                     counter++;
+                    System.out.printf("\rImages added %d",counter);
                 }
             }
             System.out.println("Images added " + counter);
+            limit = 1_000;
             counter = 0;
-            while (counter != limit && (t = parseTitle.getNextTriple()) != null) {
+            while (counter <= limit && (t = parseTitle.getNextTriple()) != null) {
                 String subject = t.getSubject();
                 if (imageStore.exists(subject)) {
                     String term = t.getObject();
@@ -47,6 +49,7 @@ public class IndexImages {
                         if (keyStem != null && !keyStem.contains(Config.invalidTerm)) {
                             titleStore.put(keyStem, subject);
                             counter++;
+                            System.out.printf("\rTitles added %d",counter);
                         }
                     }
                 }

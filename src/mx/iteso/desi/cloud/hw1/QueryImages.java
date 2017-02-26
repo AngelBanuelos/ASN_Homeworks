@@ -45,8 +45,10 @@ public class QueryImages {
         // TODO: get KeyValueStores
         IKeyValueStorage imageStore = null;
         IKeyValueStorage titleStore = null;
-        String[] args1 = {"American", "National", "Standards", "Institute"};
-        args = args1;
+        if (Config.TEST_MODE) {
+            String[] args1 = {"American", "National", "Standards", "Institute"};
+            args = args1;
+        }
         try {
 
             imageStore = KeyValueStoreFactory.getNewKeyValueStore(Config.IMAGE_TABLE_NAME);
