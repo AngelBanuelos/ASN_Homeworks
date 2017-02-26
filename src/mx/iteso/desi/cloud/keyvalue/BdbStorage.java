@@ -199,11 +199,11 @@ public class BdbStorage extends BasicKeyValueStore {
                 myEnvConfig.setAllowCreate(true);
                 myEnvConfig.setCachePercent(90);
 
-                (new File(Config.pathToDatabase)).mkdir();
+                (new File(Config.PATH_TO_DATABASE)).mkdir();
 
                 // Instantiate the Environment. This opens it and also possibly
                 // creates it.
-                myEnv = new Environment(new File(Config.pathToDatabase), myEnvConfig);
+                myEnv = new Environment(new File(Config.PATH_TO_DATABASE), myEnvConfig);
             }
             dbCount++;
         }

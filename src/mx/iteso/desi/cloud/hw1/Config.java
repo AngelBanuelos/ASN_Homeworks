@@ -14,37 +14,39 @@ import mx.iteso.desi.cloud.keyvalue.KeyValueStoreFactory;
  */
 public class Config {
 
-  // The type of key/value store you are using. Initially set to BERKELEY;
-  // will be changed to DynamoDB in some phases.
-  public static final KeyValueStoreFactory.STORETYPE storeType = KeyValueStoreFactory.STORETYPE.BERKELEY;
-  public static final String pathToDatabase = "C:\\Users\\angeldeb\\Downloads\\ASN\\";
-    
-  // Set to your Amazon Access Key ID
-  // NEVER SHARE THIS INFORMATION. SO PLEASE SET IT TO "" WHEN YOU UPLOAD YOUR HOMEWORK 
-  public static final String accessKeyID = "";
-  
-  // Set to your Amazon Secret Access Key
-  // NEVER SHARE THIS INFORMATION. SO PLEASE SET IT TO "" WHEN YOU UPLOAD YOUR HOMEWORK 
-  public static final String secretAccessKey = "";
+    // The type of key/value store you are using. Initially set to BERKELEY;
+    // will be changed to DynamoDB in some phases.
+    public static final KeyValueStoreFactory.STORETYPE STORE_TYPE = KeyValueStoreFactory.STORETYPE.BERKELEY;
+    public static final String PATH_TO_DATABASE = "/Users/angel_banuelos/Downloads/LabelsDBs/db";
 
-  // Set to your Amazon REGION tu be used
-  public static final Regions amazonRegion = Regions.US_WEST_2;
-  
-    
-  // Restrict the topics that should be indexed. For example, when this is
-  // set to 'X', you should only index topics that start with an X.
-  // Set this to "A" for local work, and to "Ar" for cloud tests..
-  public static final String filter = "A";
-  public static FilterProperties filterCriteria = FilterProperties.URL_STARTS;
-  
-  public enum FilterProperties {
-      URL_STARTS,
-      URL_CONTAINS,
-      URL_ENDS
-  }
-  public static final String titleFileName = "labels_en.ttl";
-  public static final String imageFileName = "images_en.ttl";
-  
-  
-    
+    public static final String PATH_TO_FILES = "/Users/angel_banuelos/Downloads/";
+
+    // Set to your Amazon Access Key ID
+    // NEVER SHARE THIS INFORMATION. SO PLEASE SET IT TO "" WHEN YOU UPLOAD YOUR HOMEWORK 
+    public static final String accessKeyID = "";
+
+    // Set to your Amazon Secret Access Key
+    // NEVER SHARE THIS INFORMATION. SO PLEASE SET IT TO "" WHEN YOU UPLOAD YOUR HOMEWORK 
+    public static final String secretAccessKey = "";
+
+    // Set to your Amazon REGION tu be used
+    public static final Regions amazonRegion = Regions.US_WEST_2;
+
+    // Restrict the topics that should be indexed. For example, when this is
+    // set to 'X', you should only index topics that start with an X.
+    // Set this to "A" for local work, and to "Ar" for cloud tests..
+    public static final String FILTER = "a";
+    public static FilterProperties FILTER_CRITERIA = FilterProperties.URL_STARTS;
+    public static String invalidTerm = "Invalid term";
+
+    public enum FilterProperties {
+        URL_STARTS,
+        URL_CONTAINS
+    }
+    public static final String TITLE_FILE_NAME = "labels_en.ttl";
+    public static final String IMAGE_FILE_NAME = "images_en.ttl";
+
+    public static final String IMAGE_TABLE_NAME = "imagesTrue";
+    public static final String TITLE_TABLE_NAME = "termsTrue";
+
 }

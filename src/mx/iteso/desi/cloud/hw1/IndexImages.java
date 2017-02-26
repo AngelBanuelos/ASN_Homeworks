@@ -1,19 +1,7 @@
 package mx.iteso.desi.cloud.hw1;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Scanner;
 import mx.iteso.desi.cloud.keyvalue.IKeyValueStorage;
 import mx.iteso.desi.cloud.keyvalue.KeyValueStoreFactory;
 import mx.iteso.desi.cloud.keyvalue.ParseTriples;
@@ -32,63 +20,67 @@ public class IndexImages {
 
     public void run(String imageFileName, String titleFileName) throws FileNotFoundException, IOException {
 
-        String path = Config.pathToDatabase + titleFileName;//imageFileName;//
-
-        FileInputStream inputStream = null;
-        Scanner sc = null;
+        String absoluteImagePath = Config.PATH_TO_FILES + imageFileName;
+        String absolutetitlePath = Config.PATH_TO_FILES + titleFileName;
+        ParseTriples parseImages = new ParseTriples(absoluteImagePath);
+        ParseTriples parseTitle = new ParseTriples(absolutetitlePath);
         try {
-
-            inputStream = new FileInputStream(new File(path));
-            sc = new Scanner(inputStream, "UTF-8");
-            int stop = 10000;
-            long count = 0;
-            List<Triple> tipleList = new LinkedList<Triple>();
-            while (sc.hasNextLine()) {
-                String line = sc.nextLine();
-                line = line.replace('<', ' ').trim();
-                if(!Config.filter.isEmpty() && !line.contains(Config.filter)){
-                    continue;
+            int limit = 1_000_000;
+            int counter = 0;
+            Triple t = null;
+            while (counter != limit && (t = parseImages.getNextTriple()) != null) {
+                String subject = t.getSubject();
+                if (filter(subject) && !imageStore.exists(subject)) {
+                    imageStore.put(subject, t.getObject());
+                    counter++;
                 }
-                stop--;
-                String[] helper = line.split(">");
-                System.out.println("" + Arrays.toString(helper));
-                if (helper != null && helper.length >= 3) {
-                    Triple t = new Triple(helper[0], helper[1], helper[2]);
-                    tipleList.add(t);
-                    String helper1 = t.get(2).replace("\"", "").substring(0, t.get(2).lastIndexOf("@") -2);
-                    String[] helper2 = helper1.substring(helper1.lastIndexOf("/") + 1).split(" ");
-                    for (String key : helper2) {
-                        System.out.println("key: " + PorterStemmer.stem(key) + " Value: " + helper1);
-                        
-                        titleStore.put(PorterStemmer.stem(key), helper1);
+            }
+            System.out.println("Images added " + counter);
+            counter = 0;
+            while (counter != limit && (t = parseTitle.getNextTriple()) != null) {
+                String subject = t.getSubject();
+                if (imageStore.exists(subject)) {
+                    String term = t.getObject();
+                    String[] termisA = term.split(" ");
+                    for (String key : termisA) {
+                        String keyStem = PorterStemmer.stem(key);
+                        if (keyStem != null && !keyStem.contains(Config.invalidTerm)) {
+                            titleStore.put(keyStem, subject);
+                            counter++;
+                        }
                     }
-                } else{
-                    System.out.println("" + Arrays.toString(helper));
-                }
-                if (stop == 0) {
-//                    Path file = Paths.get(Config.pathToDatabase +  "file" + count + ".txt");
-//                    Files.write(file, lines, Charset.forName("UTF-8"));
-                    System.out.println("File Created" + ++count);
-                    stop = 10000;
                 }
             }
-            // note that Scanner suppresses exceptions
-            if (sc.ioException() != null) {
-                throw sc.ioException();
-            }
+            System.out.println("Titles added " + counter);
         } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (sc != null) {
-                sc.close();
-            }
+            parseImages.close();
+            parseTitle.close();
         }
     }
 
+    private boolean filter(String subject) {
+        boolean result = false;
+        if (subject == null) {
+            return result;
+        }
+        switch (Config.FILTER_CRITERIA) {
+            case URL_STARTS:
+                if (subject.substring(subject.lastIndexOf("/") + 1).toUpperCase().startsWith(Config.FILTER.toUpperCase())) {
+                    result = true;
+                }
+                break;
+            case URL_CONTAINS:
+                if (subject.substring(subject.lastIndexOf("/") + 1).toUpperCase().contains(Config.FILTER.toUpperCase())) {
+                    result = true;
+                }
+                break;
+        }
+        return result;
+    }
+
     public void close() {
-        //TODO: close the databases;
-        
+        imageStore.close();
+        titleStore.close();
     }
 
     public static void main(String args[]) {
@@ -96,16 +88,16 @@ public class IndexImages {
         System.out.println("*** Alumno: Angel de Jesus Bañuelos Sahagun (Exp:MS705167 )");
         try {
 
-            IKeyValueStorage imageStore = KeyValueStoreFactory.getNewKeyValueStore(Config.storeType,
-                    "images");
-            IKeyValueStorage titleStore = KeyValueStoreFactory.getNewKeyValueStore(Config.storeType,
-                    "terms");
+            IKeyValueStorage imageStore = KeyValueStoreFactory.getNewKeyValueStore(Config.STORE_TYPE,
+                    Config.IMAGE_TABLE_NAME);
+            IKeyValueStorage titleStore = KeyValueStoreFactory.getNewKeyValueStore(Config.STORE_TYPE,
+                    Config.TITLE_TABLE_NAME);
 
             IndexImages indexer = new IndexImages(imageStore, titleStore);
-            indexer.run(Config.imageFileName, Config.titleFileName);
-
+            indexer.run(Config.IMAGE_FILE_NAME, Config.TITLE_FILE_NAME);
+            
             System.out.println("Indexing completed ");
-
+            indexer.close();
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Failed to complete the indexing pass -- exiting");
