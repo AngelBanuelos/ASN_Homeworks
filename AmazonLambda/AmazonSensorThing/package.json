@@ -1,0 +1,10 @@
+{
+    "name": "AmazonSensorsThing",
+    "version": "1.0.0",
+    "keywords": ["util", "functional", "server", "client", "browser"],
+    "author": "angel_banuelos",
+    "contributors": [],
+    "dependencies": {
+        "aws-iot-device-sdk": "*"
+    }
+}
